@@ -1,36 +1,37 @@
 import psycopg2
-from congif import host, user, password, db_name, port
+from congif import host, user, password
 
-temperature = 99
-connection = None
-cursor = None
+class Database:
+    connection = None
+    cursor = None
+    def ConnectToDb(self):
+        try:
+            Database.connection = psycopg2.connect( 
+                    host = host,
+                    database="face_temperature",
+                    user = user,
+                    password = password)
+            Database.cursor = Database.connection.cursor()
+            print("Connection successefully established !")
+        except Exception as _ex:
+            print(_ex)
 
-con = psycopg2.connect(
-            host = "localhost",
-            database="face_temperature",
-            user = "postgres",
-            password = "assasin007")
+    def InsertToDB(self, temperature):
+        try:
+            Database.cursor.execute("insert into temp (temperature) values (%s)", [temperature] )
+        except Exception as _ex:
+            print(_ex)
 
-#connect to the db 
+    def CommitQuery(self):
+        Database.connection.commit()
 
-#cursor 
-cur = con.cursor()
+    def CloseConnection(self):
+        print("Closing connection")
+        Database.connection.close()
+        Database.cursor.close()
+        print("Connection has been closed")
 
-cur.execute("insert into temp (temperature) values (5)"  )
-
-#execute query
-cur.execute("select temperature from temp")
-
-rows = cur.fetchall()
-
-# for r in rows:
-#     print (f"id {r[0]} name {r[1]}")
-
-#commit the transcation 
-con.commit()
-
-#close the cursor
-cur.close()
-
-#close the connection
-con.close()
+    def ShowColumns(self):
+        rows = Database.cursor.fetchall()
+        for r in rows:
+            print (f"id {r[0]} name {r[1]}")
